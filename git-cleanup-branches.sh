@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# This script can be called from any git repo
-# or the function can be added to a bash_profile to use the gitcb alias in any git repo
-
-# This script will check if there is a develop branch on remote
-# if there is a develop branch, use it as root, otherwise use master
-# once on the nearest root branch (develop or master) the script:
-# 1) pulls for most recent
-# 2) collects branches merged to root
-# 3) deletes all branches (except a root branch)
-# exiting if any of the steps fails
-
 function gitcb() {
+    # This script can be called from any git repo
+    # or the function can be added to a bash_profile to use the gitcb alias in any git repo
+
+    # This script will check if there is a develop branch on remote
+    # if there is a develop branch, use it as root, otherwise use master
+    # once on the nearest root branch (develop or master) the script:
+    # 1) pulls for most recent
+    # 2) collects branches merged to root
+    # 3) deletes all branches (except a root branch)
+    # exiting if any of the steps fails
+
     # see if we have a develop branch, and use that
     remote_url=$(git config --get remote.origin.url)
 
@@ -46,4 +46,6 @@ function gitcb() {
     git branch
 }
 
-gitcb
+
+# to execute, call:
+# gitcb

@@ -17,12 +17,14 @@ function gitcb() {
 
     can_develop=$(git ls-remote --heads $remote_url develop | wc -l)
 
+    # ZSH: if [ $can_develop = "1" ]; then
     if [ $can_develop == "1" ]; then
         git checkout develop
     else
         git checkout master
     fi
 
+    # ZSH: if [ "$?" != 0 ]; then
     if [ "$?" -ne 0 ]; then
         echo "Cannot checkout to root (master or develop)"
         return 1
@@ -31,6 +33,7 @@ function gitcb() {
     git pull
     can_pull="$?"
 
+    # ZSH: if [ "$can_pull" != 0 ]; then
     if [ "$can_pull" -ne 0 ]; then
         echo "Cannot pull most recent from root"
         return 2
@@ -38,6 +41,7 @@ function gitcb() {
 
     git branch --merged | egrep -v "(^\*|master|dev)" | xargs git branch -d
 
+    # ZSH: if [ "$?" != 0 ]; then
     if [ "$?" -ne 0 ]; then
         echo "Cannot delete branches"
         return 3

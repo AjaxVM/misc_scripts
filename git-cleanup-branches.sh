@@ -6,30 +6,37 @@ function gitcb() {
 
     # This script will check if there is a develop branch on remote
     # if there is a develop branch, use it as root, otherwise use master
-    # once on the nearest root branch (develop or master) the script:
+    # once on the nearest root branch (develop, master, main) the script:
     # 1) pulls for most recent
     # 2) collects branches merged to root
     # 3) deletes all branches (except a root branch)
     # exiting if any of the steps fails
 
     # see if we have a develop branch, and use that
+    echo ">finding base branch (develop > master > main)"
     remote_url=$(git config --get remote.origin.url)
 
-    can_develop=$(git ls-remote --heads $remote_url develop | wc -l)
+    can_develop=$(git ls-remote --heads $remote_url develop | wc -l | xargs)
+    can_master=$(git ls-remote --heads $remote_url develop | wc -l | xargs)
 
     # ZSH: if [ $can_develop = "1" ]; then
     if [ $can_develop == "1" ]; then
+        echo ">checkout develop"
         git checkout develop
-    else
+    elif [ $can_master = "1" ]; then
+        echo ">checkout master"
         git checkout master
+    else
+        echo ">checkout main"
+        git checkout main
     fi
 
-    # ZSH: if [ "$?" != 0 ]; then
     if [ "$?" -ne 0 ]; then
-        echo "Cannot checkout to root (master or develop)"
+        echo "Cannot checkout to root (develop, master or main)"
         return 1
     fi
 
+    echo ">git pull"
     git pull
     can_pull="$?"
 
@@ -39,9 +46,9 @@ function gitcb() {
         return 2
     fi
 
+    echo ">cleaning up merged branches"
     git branch --merged | egrep -v "(^\*|master|dev)" | xargs git branch -d
 
-    # ZSH: if [ "$?" != 0 ]; then
     if [ "$?" -ne 0 ]; then
         echo "Cannot delete branches"
         return 3

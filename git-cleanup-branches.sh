@@ -5,8 +5,8 @@ function gitcb() {
     # or the function can be added to a bash_profile to use the gitcb alias in any git repo
 
     # This script will check if there is a develop branch on remote
-    # if there is a develop branch, use it as root, otherwise use master
-    # once on the nearest root branch (develop or master) the script:
+    # if there is a develop branch, use it as root, otherwise use main/master
+    # once on the nearest root branch, the script:
     # 1) pulls for most recent
     # 2) collects branches merged to root
     # 3) deletes all branches (except a root branch)
@@ -16,17 +16,20 @@ function gitcb() {
     remote_url=$(git config --get remote.origin.url)
 
     can_develop=$(git ls-remote --heads $remote_url develop | wc -l)
+    can_master=$(git ls-remote --heads $remote_url master | wc -l)
 
     # ZSH: if [ $can_develop = "1" ]; then
     if [ $can_develop == "1" ]; then
         git checkout develop
-    else
+    elif [ $can_master == "1" ]; then
         git checkout master
+    else
+        git checkout main
     fi
 
     # ZSH: if [ "$?" != 0 ]; then
     if [ "$?" -ne 0 ]; then
-        echo "Cannot checkout to root (master or develop)"
+        echo "Cannot checkout to root (develop or main/master)"
         return 1
     fi
 
@@ -39,12 +42,12 @@ function gitcb() {
         return 2
     fi
 
-    git branch --merged | egrep -v "(^\*|master|dev)" | xargs git branch -d
+    git branch --merged | grep -E -v "(^\*|main|master|develop)" | xargs -n 1 -r git branch -d
 
     # ZSH: if [ "$?" != 0 ]; then
     if [ "$?" -ne 0 ]; then
-        echo "Cannot delete branches"
-        return 3
+        echo "No branches to delete"
+        # return 3
     fi
     echo "Finished, remaining branches are:"
     git branch
